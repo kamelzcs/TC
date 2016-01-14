@@ -14,9 +14,71 @@ struct TheEmpireStrikesBack {
   int CY;
   int N;
   int M;
+  vector<pair<LL, LL> > P;
+  stack<pair<LL, LL> > stk;
+  bool valid(int T) {
+    int used = 0;
+    for (int i = 0; i < P.size(); ) {
+      int start = i;
+      int nxt = start + 1;
+      while(nxt < P.size()) {
+        if (P[nxt].second < P[start].second - T) {
+          break;
+        }
+        nxt++;
+      }
+
+      int center = nxt - 1;
+      while(nxt < P.size()) {
+        if (P[nxt].first > P[center].first + T) {
+          break;
+        }
+        nxt++;
+      }
+
+      i = nxt;
+      used++;
+    }
+    return used <= M;
+  }
   int find(int _AX, int _BX, int _CX, int _AY, int _BY, int _CY, int _N, int _M) {
     AX = _AX, BX = _BX, CX = _CX, AY = _AY, BY = _BY, CY = _CY, N = _N, M = _M;
-    return 0;
+    P.push_back(make_pair(AX, AY));
+    for (int i = 1; i < N; i++) {
+      LL x = ((P[i-1].first * BX) + CX) % MOD;
+      LL y = ((P[i-1].second * BY) + CY) % MOD;
+      P.push_back(make_pair(x, y));
+    }
+
+    sort(P.begin(), P.end());
+    for (int i = 0; i < N; i++) {
+      int y = P[i].second;
+      while(!stk.empty() && y >= stk.top().second) {
+        stk.pop();
+      }
+      stk.push(P[i]);
+    }
+
+    P.clear();
+    while(!stk.empty()) {
+      P.push_back(stk.top());
+      stk.pop();
+    }
+
+    reverse(P.begin(), P.end());
+
+    int left = 0, right = MOD;
+    while(left <= right) {
+      int mid = left + (right -left) / 2;
+      if (!valid(mid)) {
+        left = mid + 1;
+      }
+      else {
+        right = mid - 1;
+      }
+    }
+
+    return left;
   }
 };
 
